@@ -1,0 +1,103 @@
+<div class="modal-dialog modal-ms modal-dos" role="document">
+  <div class="csForm modal-content">
+    <fieldset>
+      <div class="modal-header">
+        <legend class="modal-title" id="exampleModalLongTitle">Adjuntar Archivo</legend>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class="form-inline" method="post" enctype="multipart/form-data"  action="/upload" id="formFile">
+          <div class="row">
+            <div class="form-group">
+              <label id="upload" for="miFile" class="btn btn-default btn-file fa fa-upload col-md-12"> 
+                <span id="labelUpload"><b>Explorar ... :</b></span>
+                <input type="file" name="miFile" id="miFile" class="csHidden" required="required" onChange="$('#labelUpload').html('<b>Subir Archivos : </b>'+$(this).val().replace(/.*(\/|\\)/, ''))"/>
+              </label>
+            </div>
+            <div class="form-group col-md-12 text-center">
+              <button type="submit" class="btn btn-outline-primary fa fa-paperclip" id="btn-img"> Adjuntar</button>
+            </div>
+          </div>    
+        </form>
+        <div role="menu">
+          <ul class="list-group" id="listFile"></ul>
+        </div>
+        <div class="row" id="ajaxmensanje" style="display: none">
+          <div class="form-group col-md-12 text-center">
+              <i class="fa fa-spinner fa-spin fa-2x"> </i>  Cargando...
+          </div> 
+        </div>
+      </div>
+    </fieldset>
+  </div>
+</div>
+
+<script>
+  var ad = JSON.parse($("#"+sessionStorage.atach).val());
+  ad = ad.reverse(function(a,b){return a.url - b.url;});
+  $(document).ready(function () {    
+    ad.map(function(row, i){
+      if(row.estado !== "X")
+      $("#listFile").append(`<li class='list-group-item'><a target='_blank' href='${row.url}'><i class='fa fa-download'> </i>  ${row.name}</a> <button type="button" class='fa fa-close badge' data-id='${row.url}' onclick='fnFileDelet(this)'>X</button></li>`);
+    });
+    $("#formFile").submit(function(e){
+      e.preventDefault();
+      var formdata = new FormData(this);
+      $("#listFile").html("");
+      $.ajax({
+        url: "/upload",
+        type: "POST",
+        data: formdata,
+        mimeTypes:"multipart/form-data",
+        contentType: false,
+        cache: false,
+        processData: false,
+        beforeSend: function(){
+          $('#ajaxmensanje').show(); 
+        },
+        success: function(data){
+          $("#formFile")[0].reset();
+          ad.push(JSON.parse(data));
+          $("input#"+sessionStorage.atach).val(JSON.stringify(ad));
+          $("div#list"+sessionStorage.atach).html("");
+          ad = ad.reverse(function(a,b){return a.url - b.url;});
+          ad.map(function(row, i){
+            if(row.estado !== "X"){
+              $("div#list"+sessionStorage.atach).append(`<li class='list-group-item'><a target='_blank' href='${row.url}'><i class='fa fa-download'> </i>  ${row.name}</a></li>`);
+              $("#listFile").append(`<li class='list-group-item'><a target='_blank' href='${row.url}'><i class='fa fa-download'> </i>  ${row.name}</a> <button class='fa fa-close badge' data-id='${row.url}' onclick='fnFileDelet(this)'>X</button></li>`);
+            }            
+          });
+          $('#labelUpload').html('<b>Explorar... : </b>');
+        },error: function(err){
+          console.log("Ups. Error al cargar el archivo", err);
+        },complete: function(){
+          $('#ajaxmensanje').hide(); 
+        }
+      });
+    });
+  });
+  function fnFileDelet(obj){
+    var ad = JSON.parse($("#"+sessionStorage.atach).val());
+    $("div#list"+sessionStorage.atach).html("");
+    $("#listFile").html("");
+    var newList = [], newRow = {};
+    var lista = ad.filter(reg => {
+      newRow = reg;
+      if(reg.url == $(obj).data("id")){
+        newRow.estado = "X";
+      }
+      newList.push(newRow);
+    });
+    newList = newList.reverse(function(a,b){return a.url - b.url;});
+    
+    newList.map(function(row, i){
+      if(row.estado !== "X"){
+        $("div#list"+sessionStorage.atach).append(`<li class='list-group-item'><a target='_blank' href='${row.url}'><i class='fa fa-download'> </i>  ${row.name}</a></li>`);
+        $("#listFile").append(`<li class='list-group-item'><a target='_blank' href='${row.url}'><i class='fa fa-download'> </i>  "${row.name}"</a> <button class='fa fa-close badge' data-id='${row.url}' onclick='fnFileDelet(this)'>X</button></li>`);
+      }
+    });
+    $("input#"+sessionStorage.atach).val(JSON.stringify(newList));
+  }
+</script>

@@ -1,0 +1,72 @@
+<div class="modal-dialog" role="document">
+  <form class="csForm modal-content" id="formEditClave" METHOD="POST">
+   <fieldset>
+    <div class="modal-header">
+      <h5 class="modal-title" id="pUserNombre"></h5>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+          <div class="form-group col">
+            <label for="pClave">Usuario:</label>
+            <div id="pUsuario" class="form-control"></div>
+          </div>
+          <div class="form-group col">
+            <label for="pClave">Clave Actual:</label>
+            <input type="password" name="pClave" id="pClave" placeholder="Nueva Clave" size="30" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="pClave1">Nueva Clave:</label>
+            <input type="password" name="pClave1" id="pClave1" placeholder="Nueva Clave" size="30" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="pClave2">Confirmar Clave:</label>
+            <input type="password" name="pClave2" id="pClave2" placeholder="Confirmar Clave" size="30" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <div class="text-center colorrojo" id="msjeditclave"></div>
+          </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa fa-save"></i> Guardar
+      </button>
+    </div>
+   </fieldset>
+  </form>
+</div>
+
+<script>
+  var q =`query{miUsuario{cuenta per:personaByPersId{primerNombre segundoNombre primerApellido segundoApellido}}}`;
+  fnGql({query:q, action:function(res){
+      var r = res.data.miUsuario;
+      $("#pUsuario").html( r.cuenta );
+      $("#pUserNombre").html(isNull(r.per.primerNombre)+" "+isNull(r.per.segundoNombre)+" "+isNull(r.per.primerApellido)+" "+isNull(r.per.segundoApellido));
+    }});
+
+
+  $("#formEditClave").submit(function(e) {
+    e.preventDefault();
+    $("#msjeditclave").text("");
+    var c = $("#pClave").val();
+    var c1 = $("#pClave1").val();
+    var c2 = $("#pClave2").val();
+    
+   if (c1 == c2) {
+    var m = `mutation{editClave(input:{pClave:"${c}",pClave2:"${c2}"}) {
+               clientMutationId string}
+             }`;
+    fnGql({query:m, action:function(res){
+      console.log(res.data);
+      if(res.data.editClave.string == 'ok')
+        $('a[href="#salir"]').trigger("click");
+      else{
+        $("#msjeditclave").text(res.data.editClave.string);
+        this.reset();
+      }
+    }});
+   }else{
+      $("#msjeditclave").text("Las contraseñas no son Iguales");
+   }
+  });
+</script>

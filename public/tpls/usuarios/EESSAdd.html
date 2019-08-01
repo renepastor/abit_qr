@@ -1,0 +1,173 @@
+<div class="modal-dialog modal-lg" role="document">
+    
+  <div class="csForm modal-content">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Perfil de Usuario</legend>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="form-group col">
+        <div class='input-group' id='personaIdDtti'>
+          <input type="text" name="ci_search" id="ci_search" value="" placeholder="ci" size="16" class="form-control">
+          <span class="input-group-addon" id="ci_btn">
+            <span class="fa fa-search"></span>
+          </span>
+        </div>
+      </div>
+    <form  id="formCrearUsuarios" method="POST">
+    <div class="modal-body">
+       
+      <div class="row">
+        <div class="col-md-6 p-0 m-0">
+          <div class="form-group col">
+            <label for="pCuenta">Cuenta : </label>
+            <input type="text" name="pCuenta" id="pCuenta" readonly="readonly" required="required" placeholder="Cuenta" size="10" class="form-control text">
+          </div>          
+          <!--div class="form-group col">
+            <label for="clave">Clave : </label>
+            <input type="text" name="clave" id="clave" required="required" placeholder="Clave" size="30" class="form-control text">
+          </div-->
+          <div class="form-group col">
+            <label for="pAlias">Alias : </label>
+            <input type="text" name="pAlias" id="pAlias" readonly="readonly" required="required" placeholder="Alias" size="30" class="form-control text">
+          </div>
+          <div class="form-group col">
+            <label for="pEstado">Estado : </label>
+            <select name="pEstado" id="pEstado" class="form-control text" required="required">
+              <option value="C">Activo</option>
+              <option value="X">Inactivo/Eliminado</option>
+            </select>
+          </div>
+          <input type="hidden" name="pPersId" id="pPersId" required="required" value="" class="int8">
+          <input type="hidden" name="pRolesId" id="pRolesId" required="required" value="" class="json">
+        </div>
+        
+        <div class="col-md-6 p-0 m-0">
+          <!--div class="form-group">
+            <label for="pExpira">Expira:</label>
+            <div class='input-group date' id='pExpira'>
+              <input type="text" name="pExpira" id="pExpira" placeholder="dd/mm/yyyy" required="required" class="form-control date">
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div-->
+          <div class="form-group col">
+            <label>Rol:</label>
+            <div id="pnlRoles" class="form-control">Cargando...
+            </div>
+          </div>
+          <br><br>
+          
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="submit" class="btn btn-sm btn-primary">
+        <i class="fa fa-save"></i> Guardar
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal">
+        Cancelar <i class="fa fa-close"></i> 
+      </button>
+    </div>
+  </form>
+   </fieldset>
+  </div>
+</div>
+<script type="text/javascript">
+  (function(){
+    var q =`query{allRoles(condition:{sistema:"EESS" estado:"C"}){nodes{id nombre descripcion sistema estado}}}`;
+    fnGql({query:q, action:function(res){
+      var listRoles = res.data.allRoles.nodes;
+      $("#pnlRoles").html("");
+      listRoles.map(rewRol => {
+        $("#pnlRoles").append(`<label><input type="checkbox" name="${rewRol.id}" id="${rewRol.id}"><span>[${rewRol.nombre}]${rewRol.descripcion}</span></label>`);
+      });
+    }});
+    $("#pExpira").datetimepicker({
+      format:"L",locale: "es",format: "DD/MM/YYYY"
+    });
+
+    $("#ci_search").attr({
+      "data-url":'/rrhh/searchTrabajadores',
+      "data-ql":'{"query":"$$$"}',
+      "data-names":JSON.stringify({"val":"idPersona","text":"nombreTrabajador", "user":"usuario"})}
+    );
+    
+    $("#ci_search").listAjax({
+      action:(res => {
+        $("#ci_search_list").on("click", "li", function(){
+          var datoSelect = JSON.parse(this.dataset.json);
+          $("#pPersId").val(datoSelect.idPersona);
+          $("#pAlias").val(datoSelect.nombreTrabajador);
+          $("#pCuenta").val(datoSelect.usuario);
+          var q =`query{allUsrRoles(condition:{userId:"${datoSelect.idPersona}" estado:"C"}){
+                            nodes{expira rol:roleByRolId{id nombre descripcion sistema estado}}
+                 }}`;
+          fnGql({query:q, action:function(res){
+            var listRolesAsignados = res.data.allUsrRoles.nodes;            
+            $("#pnlRoles input[type=checkbox]").prop('checked',false);
+            listRolesAsignados.map(rewRol => {
+              $("#pnlRoles input[type=checkbox]#"+rewRol.rol.id).prop('checked',true);
+            });
+          }});
+        });
+        return res;
+      })
+    });
+    if(sessionStorage.getItem("usuariosAd")){
+      var dato = JSON.parse(_d(sessionStorage.getItem("usuariosAd")));
+      $("#ci_search_text").val(dato.alias);
+      $("#pAlias").val(dato.alias);
+      $("#pCuenta").val(dato.cuenta);
+      $("#pPersId").val(dato.persId);
+      var q =`query{allUsrRoles(condition:{userId:"${dato.persId}" estado:"C"}){
+                            nodes{expira rol:roleByRolId{id nombre descripcion sistema estado}}
+                 }}`;
+      fnGql({query:q, action:function(res){
+        var listRolesAsignados = res.data.allUsrRoles.nodes;
+        $("#pnlRoles input[type=checkbox]").prop('checked',false);
+        listRolesAsignados.map(rewRol => {
+          $("#pnlRoles input[type=checkbox]#"+rewRol.rol.id).prop('checked',true);
+        });
+      }});
+      sessionStorage.setItem("usuariosAd", '');
+    }
+        
+        
+
+  })();
+
+  $("#formCrearUsuarios").submit(function(e) {
+    e.preventDefault();
+    var data = $(this);
+    var roles = [], rowRol = {};
+    $("#pnlRoles input[type=checkbox]").map((r, row) => {
+      if(row.checked == true){
+        rowRol = {};
+        rowRol.rolId=row.id;
+        rowRol.select =row.checked;
+        roles.push(rowRol);
+      }
+    });
+    $("#pRolesId").val(JSON.stringify(roles));
+    var dt = formInput(this);
+    
+    var p =`mutation {editUsuario(input:{${dt}}){usuario{persId}}}`;
+    fnGql({query:p, action:function(res){
+      var d = res.data.editUsuario.usuario.persId;
+      if(d>0){
+        $("#pnlModal").modal("toggle");
+        toastr.info("Correctamente", "Se registro");
+        $("tbody#pnlUsuarios").html(""); 
+        listUsuarios();
+      }else{
+        toastr.error(res.toString(), "No se registro");
+      }
+    }});
+  });
+  
+
+</script>

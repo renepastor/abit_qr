@@ -1,0 +1,58 @@
+
+<div class="table-responsive project-stats">
+<table class="table table-striped table-sm table-hover">
+  <thead class="thead-default">
+    <tr>
+      <th><button class="btn btn-sm btn-new fa fa-plus-square" data-backdrop="static" data-toggle="modal" data-url="/usuarios/EESSAdd.html" data-target="#pnlModal" id="new">Nuevo</button></th>
+      <th nowrap class="csHidden">Pers</th>
+      <th nowrap>Cuenta</th>
+      <th nowrap>Alias</th>
+    </tr>
+  </thead>
+  <tbody id="pnlUsuarios">
+  </tbody>
+</table>
+</div>
+<div id="pnlPg"></div>
+<script type="text/javascript">
+  $("#new").on("click", function(){
+    fnUrl(this);
+  });
+    $("tbody#pnlUsuarios").html("");
+    var listUsuarios =function(pg=0,limit=pag, n=0, c=1){
+        var q =`query{allVwUsuarios(condition:{clave:"EESS"} offset:${pg}, first:${limit} orderBy: EDITADO_DESC){totalCount nodes{persId cuenta alias  estado editado usuario }}}`;
+        fnGql({query:q, action:function(res){
+          var d = res.data.allVwUsuarios.nodes;
+          n = res.data.allVwUsuarios.totalCount;
+          if(d.length > 0 && parseInt((pg+d.length)/pag) <= parseInt(n/pag)){
+            $("#load").html("Cargando....");
+            d.map(function(row) {
+              $("#pnlPg").html("Nro Reg. "+(pg+(c++))+" de "+n);
+              $("tbody#pnlUsuarios").append(`
+                  <tr class="${row.estado}">
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary fa fa-edit"
+                      data-backdrop="static" title="Modificar usuarios" 
+                      onClick="fnUrl(this);" data-url="/usuarios/EESSAdd.html" data-toggle="modal" data-target="#pnlModal" 
+                      data-dato='{"persId":"${row.persId}", "alias":"${row.alias}", "cuenta":"${row.cuenta}"}' data-name="usuariosAd" id="${row.id}"></button>
+                    </td>
+                    <td>${row.cuenta}</td>
+                    <td>${row.alias}</td>
+                  </tr>`
+              );
+            });
+            $("button.permisos").popover({html:true});
+            $("button.permisos").on("click", function(){permisos(this);});
+            $("#load").html("");
+            fnTableScroll("table");
+          }else{$(".project-stats").attr("disabled", "disabled").off("scroll");}
+        }});
+      }
+    var pg = 0;    listUsuarios(pg);
+    $(".project-stats").scroll(function(){
+      if(this.scrollTop == this.scrollTopMax ){
+        pg = pg+pag;
+        listUsuarios(pg);
+      }
+    });
+</script><script type="text/javascript" src="./js/global.js"></script>

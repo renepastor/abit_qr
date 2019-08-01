@@ -1,0 +1,7 @@
+/node_modules
+/BD/error
+/BD/log
+/generate/temp
+/package-lock.json
+/public/node_modules
+/public/package-lock.json

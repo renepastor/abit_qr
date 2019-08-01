@@ -1,0 +1,61 @@
+
+<div class="table-responsive project-stats">
+<div class="row" id="pnlUserDispositivos">  
+</div>
+</div>
+<div id="pnlPg"></div>
+<script type="text/javascript">
+  $("#new").on("click", function(){
+    fnUrl(this);
+  });
+  $("div#pnlUserDispositivos").on("click",".dispositivo",function(){
+    var estado = this.dataset.est;
+    if(estado) estado = false;
+    else estado = true;
+    console.log("Accion....", this.dataset.est, this.value);
+    var p =`mutation{updateDispositivoById(input:{id:"${this.value}"
+            dispositivoPatch:{valor:"${estado}" estadoDispositivo:${estado}}}){
+        dispositivo{id}}}`;
+    fnGql({query:p, action:function(res){
+    }});
+  });
+  $("div#pnlUserDispositivos").html("");
+  var listUserDispositivos =function(pg=0,limit=pag, n=0, c=1){
+      var q =`query {miUsuario {
+        usrDispositivos:userDispositivosByPersonaId {nodes { id
+            dispositivo:dispositivoByDispositivoId {id estadoDispositivo valor usuario editado
+              ambiente:ambienteByAmbienteId {descripcion}
+              tipo:tblTipoByTipoDispositivoId {valor}}}}
+        }}`;
+      
+      fnGql({query:q, action:function(res){
+        var d = res.data.miUsuario.usrDispositivos.nodes;
+        $("#load").html("Cargando....");
+          d.map(function(row) {
+            $("div#pnlUserDispositivos").append(`
+              <div style="min-width:8rem" class="col border text-center w-100 p-0">
+                <h4 class="bg-info w-100">${row.dispositivo.ambiente.descripcion}</h4>
+                <div><button value="${row.dispositivo.id}" class="dispositivo btn-lg circulo btn btn-outline-warning ${row.dispositivo.estadoDispositivo}" data-est="${row.dispositivo.estadoDispositivo}"><i class="fa ${row.dispositivo.tipo.valor} fa-2x"></i></button></div>
+                <div class="fa fa-user"> ${row.dispositivo.usuario}</div>
+                <div class="fa fa-clock-o"> ${moment(row.dispositivo.editado).format("DD/MM/YYYY hh:mm")}</div>
+              </div>`
+            );
+          });
+          $("#load").html("");
+      }});
+    }
+  var pg = 0;
+  listUserDispositivos(pg);
+  $("div#pnlUserDispositivos").on("click", ".dispositivo", function(){
+    if(this.dataset.est==="true"){
+      $(this).removeClass("true");
+      this.dataset.est = 'false';
+      //this.value = 'false';
+    }else{
+      $(this).addClass("true");
+      this.dataset.est = 'true';
+      //this.value = 'true';
+    }
+  });
+</script>
+<script type="text/javascript" src="./js/global.js"></script>

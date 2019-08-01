@@ -1,0 +1,98 @@
+<div class="modal-dialog modal-lg" role="document">
+  <form class="csForm modal-content" id="formModificarFichaMascotas">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Modificar Ficha Mascotas</legend>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+        <div class="form-group col">
+          <label for="nombre">Nombre : </label>
+          <input type="text" name="nombre" id="nombre" required="required" placeholder="Nombre" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="foto" class="img-thumbnail">
+            <img src="" id="foto_ax" width="50" height="50" alt="" class="foto"/>
+            <input type="hidden" name="foto" id="foto" class="text">
+            <i>Foto</i>
+            <input type="file" name="fotoFile" id="fotoFile" placeholder="Imagen" required="required" 
+            class="form-control file-img" onchange="minimizarImg({'imge':'required="required"_ax','input':'required="required"'});"/>
+          </label>
+        </div>
+        <div class="form-group col">
+          <label for="nombreDueño">Nombre Dueño : </label>
+          <input type="text" name="nombreDueño" id="nombreDueño" required="required" placeholder="Nombre Dueño" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="direccionDueño">Direccion Dueño : </label>
+          <input type="text" name="direccionDueño" id="direccionDueño" required="required" placeholder="Direccion Dueño" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="coordenadas">Coordenadas : </label>
+          <button type="button" class="btn btn-outline-primary" onClick="geoPop('coordenadas')"><i class="fa fa-map-marker"></i></button>
+          <input type="hidden" name="coordenadas" id="coordenadas" required="required" class="json">
+        </div>
+        <div class="form-group col">
+          <label for="estado">Estado : </label>
+          <select name="estado" id="estado" class="form-control text">
+            <option value="C">Activo</option>
+            <option value="X">Inactivo/Eliminado</option>
+          </select>
+        </div><input type="hidden" name="id" id="id" required="required" placeholder="Id" class="int8">
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="submit" class="btn btn-sm btn-primary">
+        <i class="fa fa-save"></i> Modificar
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal">
+        Cancelar <i class="fa fa-close"></i> 
+      </button>
+    </div>
+   </fieldset>
+  </form>
+</div>
+<script type="text/javascript">
+$("#formModificarFichaMascotas").submit(function(e) {
+    e.preventDefault();
+    var data = $(this);
+    var est = "C";
+    if(!$("#formModificarFichaMascotas #estado").prop("checked")){
+      est ="X";
+    }
+    var dt = formInput(this);
+    var p =`mutation{updateFichaMascotaById(input:{id:"${$("#id").val()}" fichaMascotaPatch:{${dt}}}){
+        fichaMascota{id}
+       }
+     }`;
+    fnGql({query:p, action:function(res){
+      var d = res.data.updateFichaMascotaById.fichaMascota.id;
+      if(d>0){
+        $("#pnlModal").modal("toggle");
+        toastr.info("Correctamente", "Se registro");
+        $("tbody#pnlFichaMascotas").html(""); 
+        listFichaMascotas();
+      }else{
+        toastr.error(res.toString(), "No se registro");
+      }
+    }});
+  });
+  $(document).ready(function() {
+    var dato = JSON.parse(_d(sessionStorage.getItem("fichaMascotas")));
+    var q =`{fichaMascotaById(id:"${dato.id}"){ id,nombre,foto,notas,nombreDueño,direccionDueño,coordenadas,contactos,adicionales,estado,usuario,editado}}`;
+        fnGql({query:q, action:function(res){
+          var fichaMascota = res.data.fichaMascotaById;
+          Object.keys(fichaMascota).map(res => {
+            $("#"+res).val(fichaMascota[res]);
+            if(res == "foto") $("#foto_ax").attr({"src":fichaMascota["foto"]});
+          });
+        }});
+     $(" ").datetimepicker({
+        format:"L",locale: "es",format: "DD/MM/YYYY"
+     });
+  });
+</script>
+<script type="text/javascript" src="./js/global.js"></script>

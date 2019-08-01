@@ -1,0 +1,149 @@
+<div class="modal-dialog">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">
+        <span aria-hidden="true">×</span>
+        <span class="sr-only">Cerrar</span>
+      </button>
+      <h4 class="modal-title" id="myModalLabel">Registrar Usuario</h4>
+    </div>
+ <form class="csForm form-inline" id="formUsuario">
+  <div class="modal-content"> 
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="pNombres">Nombres:</label>
+            <input type="text" name="pNombres" id="pNombres" placeholder="Nombres" size="30" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="pApellidos">Apellidos:</label>
+            <input type="text" name="pApellidos" id="pApellidos" placeholder="Apellidos" size="30" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="pCorreo">Correo:</label>
+            <input type="text" name="pCorreo" id="pCorreo" placeholder="Correo" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <input type="hidden" name="pDireccion" id="pDireccion" value="S/D" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="pSedeId">Sede:</label>
+            <select name="pSedeId" id="pSedeId" required="true" class="form-control">
+              <option>--Seleccionar--</option>
+              <option data-template value="{{id}}">{{sede}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="pCargId">Cargo:</label>
+            <select name="pCargId" id="pCargId" required="true" class="form-control">
+              <option>--Seleccionar--</option>
+              <option data-template value="{{id}}">{{descripcion}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="pExpira">Expira:</label>
+            <input type="text" name="pExpira" id="pExpira" placeholder="dd/mm/yyyy" class="form-control" size="12">
+          </div>
+          <div class="form-group">
+            <label for="pRolId">Rol:</label>
+            <select name="pRolId" id="pRolId" required="true" class="form-control">
+              <option>--Seleccionar--</option>
+              <option data-template value="{{id}}">{{nombre}}</option>
+            </select>
+          </div>
+          <br><br>
+          <div class="form-group col-md-12">
+            <ul id="listEnlace">
+              <li data-template>
+                <input type="checkbox" name="pEnlaId" id="pMenuId{{id}}">
+                <label for="pMenuId{{id}}">{{nombre}} <i class="fa {{enl.imagen}}"></i> {{enl.nombre}}</label>
+              </li>
+            </ul>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+        <input type="submit" class="btn" value="Guardar"/>
+  </div> 
+ </form>
+</div>
+
+<script type="text/javascript">
+
+  var varSede = Tempo.prepare("pSedeId");
+  var varEnlace = Tempo.prepare("listEnlace");
+  var varCargo = Tempo.prepare("pCargId");
+  var varRol = Tempo.prepare("pRolId");
+  
+  var q =`query{
+  allSedes{nodes{sede id}}
+  allCargos{nodes{descripcion id}}
+  allRoles{nodes{nombre id}}}`;
+
+  fnGql({query:q, action:`
+    var lists = res.data;
+    varSede.render(lists.allSedes.nodes)
+    varCargo.render(lists.allCargos.nodes)
+    varRol.render(lists.allRoles.nodes)
+  `});
+  $("#pRolId").on("change", function(){
+    var id = this.value;
+    var q =`query{
+       allMenues(condition:{rolId:${id}}){nodes{enl:enlaceByEnlaId{ruta ayuda nombre imagen}}}
+    }`;
+    fnGql({query:q, action:`
+      var lists = res.data;
+      varEnlace.render(lists.allMenues.nodes)
+    `});
+  });
+  
+  $(document).ready(function() {
+    $("#pExpira").datepicker();
+  });
+
+
+  $("#formUsuario").submit(function(e) {
+    e.preventDefault();
+    var fecha = $("#pExpira").val();
+    if(fecha==""){fecha="31/12/2050";}
+    var dat = {};
+    dat.pNombres = $("#pNombres").val();
+    dat.pApellidos = $("#pApellidos").val();
+    dat.pCorreo = $("#pCorreo").val();
+    dat.pDireccion = $("#pDireccion").val();
+    dat.pSedeId = $("#pSedeId").val();
+    dat.pCargId = $("#pCargId").val();
+    dat.pRolId = $("#pRolId").val();
+    dat.pExpira = fecha;
+    dat.pPermiso = "{}";
+    var p =`mutation{
+      addUsuario(input:{
+      pNombres: "${dat.pNombres}",
+      pApellidos: "${dat.pApellidos}",
+      pCorreo: "${dat.pCorreo}",
+      pDireccion: "${dat.pDireccion}",
+      pExpira: "${dat.pExpira}",
+      pSedeId: ${dat.pSedeId},
+      pCargoId: ${dat.pCargId},
+      pPermiso: "${dat.pPermiso}",
+      pRolId: ${dat.pRolId}
+      }){usuario{usrRolesByUserId{nodes{
+          expira rol:roleByRolId{nombre}
+          pers:personaByUserId{nombres apellidos direccion nacimeinto
+          empl:empleadosByPersId{nodes{sedeBySedeId{sede}}}}
+          usua:usuarioByUserId{cuenta persId}
+        }}}}
+      }`;
+    fnGql({query:p, action:`
+      var d = res.data.addUsuario.usuario.usrRolesByUserId.nodes[0];
+      varLstUsuario.append(d);
+      //$("#pnlModal").html(fnMenj({"msj":"Se registro correctamente"}));
+      $("#pnlModal modal-body p").html(""); 
+      $("#pnlModal").modal('toggle');
+    `});
+  });
+</script>

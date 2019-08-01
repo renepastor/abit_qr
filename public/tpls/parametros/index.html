@@ -1,0 +1,62 @@
+
+<div class="table-responsive project-stats">
+<table class="table table-striped table-sm table-hover">
+  <thead class="thead-default">
+    <tr>
+      <th><button class="btn btn-sm btn-new fa fa-plus-square" data-backdrop="static" data-toggle="modal" data-url="/parametros/add.html" data-target="#pnlModal" id="new">Nuevo</button></th>
+      <th nowrap class="csHidden">Id</th>
+    <th nowrap>Campo</th>
+    <th nowrap>Valor</th>
+    <th nowrap>Sistema</th>
+    <th nowrap>Descripcion</th>
+
+    </tr>
+  </thead>
+  <tbody id="pnlParametros">
+  </tbody>
+</table>
+</div>
+<div id="pnlPg"></div>
+<script type="text/javascript">
+  $("#new").on("click", function(){
+    fnUrl(this);
+  });
+    $("tbody#pnlParametros").html("");
+    var listParametros =function(pg=0,limit=pag, n=0, c=1){
+        var q =`query{allParametros(offset:${pg}, first:${limit} orderBy: EDITADO_DESC){totalCount nodes{id campo valor sistema descripcion  estado editado usuario }}}`;
+        fnGql({query:q, action:function(res){
+          var d = res.data.allParametros.nodes;
+          n = res.data.allParametros.totalCount;
+          if(d.length > 0 && parseInt((pg+d.length)/pag) <= parseInt(n/pag)){
+            $("#load").html("Cargando....");
+            d.map(function(row) {
+              $("#pnlPg").html("Nro Reg. "+(pg+(c++))+" de "+n);
+              $("tbody#pnlParametros").append(`
+                  <tr class="${row.estado}">
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary fa fa-edit" title="Modificar parametros" onClick="fnUrl(this);" data-url="/parametros/edit.html" data-backdrop="static" data-toggle="modal" data-target="#pnlModal" data-dato='{"id":"${row.id}"}' data-name="parametros" id="${row.id}"></button>
+                    </td>
+                    <td>${row.campo}</td>
+                    <td>${row.valor}</td>
+                    <td>${row.sistema}</td>
+                    <td>${row.descripcion}</td>
+
+                  </tr>`
+              );
+            });
+            $("button.permisos").popover({html:true});
+            $("button.permisos").on("click", function(){permisos(this);});
+            $("#load").html("");
+            fnTableScroll("table");
+          }else{$(".project-stats").attr("disabled", "disabled").off("scroll");}
+        }});
+      }
+    var pg = 0;    listParametros(pg);
+    $(".project-stats").scroll(function(){
+      var scrollTopMax = window.scrollMaxY || (this.scrollHeight - this.clientHeight);
+      if(this.scrollTop == scrollTopMax ){
+        pg = pg+pag;
+        listParametros(pg);
+      }
+    });
+</script><script type="text/javascript" src="./js/global.js"></script>

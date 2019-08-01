@@ -1,0 +1,88 @@
+<div class="modal-dialog modal-lg" role="document">
+  <form class="csForm modal-content" id="formModificarParametros">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Modificar Parametros</legend>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+        <div class="form-group col">
+          <label for="campo">Campo : </label>
+          <input type="text" name="campo" id="campo" required="required" placeholder="Campo" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="valor">Valor : </label>
+          <input type="text" name="valor" id="valor" required="required" placeholder="Valor" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="sistema">Sistema : </label>
+          <input type="text" name="sistema" id="sistema"  placeholder="Sistema" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="descripcion">Descripcion : </label>
+          <input type="text" name="descripcion" id="descripcion"  placeholder="Descripcion" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="estado">Estado : </label>
+          <select name="estado" id="estado" class="form-control text">
+            <option value="C">Activo</option>
+            <option value="X">Inactivo/Eliminado</option>
+          </select>
+        </div><input type="hidden" name="id" id="id" required="required" placeholder="Id" class="int8">
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="submit" class="btn btn-sm btn-primary">
+        <i class="fa fa-save"></i> Modificar
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal">
+        Cancelar <i class="fa fa-close"></i> 
+      </button>
+    </div>
+   </fieldset>
+  </form>
+</div>
+<script type="text/javascript">
+$("#formModificarParametros").submit(function(e) {
+    e.preventDefault();
+    var data = $(this);
+    var est = "C";
+    if(!$("#formModificarParametros #estado").prop("checked")){
+      est ="X";
+    }
+    var dt = formInput(this);
+    var p =`mutation{updateParametroById(input:{id:"${$("#id").val()}" parametroPatch:{${dt}}}){
+        parametro{id}
+       }
+     }`;
+    fnGql({query:p, action:function(res){
+      var d = res.data.updateParametroById.parametro.id;
+      if(d>0){
+        $("#pnlModal").modal("toggle");
+        toastr.info("Correctamente", "Se registro");
+        $("tbody#pnlParametros").html(""); 
+        listParametros();
+      }else{
+        toastr.error(res.toString(), "No se registro");
+      }
+    }});
+  });
+  $(document).ready(function() {
+    var dato = JSON.parse(_d(sessionStorage.getItem("parametros")));
+    var q =`{parametroById(id:"${dato.id}"){ id,campo,valor,sistema,descripcion,estado,usuario,editado}}`;
+        fnGql({query:q, action:function(res){
+          var parametro = res.data.parametroById;
+          Object.keys(parametro).map(res => {
+            $("#"+res).val(parametro[res]);
+            if(res == "foto") $("#foto_ax").attr({"src":parametro["foto"]});
+          });
+        }});
+     $(" ").datetimepicker({
+        format:"L",locale: "es",format: "DD/MM/YYYY"
+     });
+  });
+</script>
+<script type="text/javascript" src="./js/global.js"></script>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Sistema ABIT">
+  <meta name="author" content="renepastor@gmail.com">
+  <meta name="keyword" content="ABIT">
+  <link rel="shortcut icon" href="./img/favicon.ico">
+  
+  
+  <meta name="theme-color" content="#022E56" />
+  <meta name="msapplication-TileColor" content="#022E56" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="msapplication-TileImage" content="./img/abit32.jpg" />
+  <meta name="mobile-web-app-capable" content="yes"  />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ABIT" />
+  <meta name="application-name" content="AbiT" />
+  <!--IOs -->
+  <link rel="apple-touch-icon" href="./img/abit64.png" />
+  <link rel="icon" type="image/png" href="./img/favicon.ico" sizes="32x32" />
+  <link rel="icon" type="image/png" href="./img/favicon.ico" sizes="16x16" />
+  <link rel="icon" href="./img/abit64.png" alter"prinsipal IO">
+
+  <title>AbiT</title>
+
+  <!-- Icons -->
+  <link href="node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Main styles for this application -->
+  <link href="css/style.css" rel="stylesheet">
+  <link href="/node_modules/bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+  <!-- Styles required by this views -->
+  <link rel="stylesheet" href="css/toastr.min.css">
+  <link rel="stylesheet" href="css/sistema.css">
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.css" id="mapBoxCss">
+</head>
+
+
+<body class="app header-fixed sidebar-fixed aside-menu-fixed aside-menu-hidden    pace-done sidebar-minimized brand-minimized">
+  <header class="app-header navbar sombra">
+    <button class="navbar-toggler mobile-sidebar-toggler d-lg-none mr-auto" type="button">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand p-0 m-0" href="#home"></a>
+    <button class="navbar-toggler sidebar-toggler d-md-down-none" type="button">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item d-md-down-none">
+        <a class="nav-link nav-item dropdown d-md-down-none" href="#">
+        </a>
+      </li>
+      <li class="nav-item d-md-down-none p-1 text-right" id="nombreUser"></li>
+      <li class="">
+        <img width="50" height="50" class="img-circle border fa fa-2x border-primary" src="../img/user.png" alt="v" id="btnLogin" data-toggle="popover" data-placement="bottom" data-url="/login.html" data-target="#pnlLogin"/>
+      </li>
+    </ul>
+  </header>
+
+  <div class="app-body">
+    <div class="sidebar">
+      <nav class="sidebar-nav">
+        <ul class="nav" id="listMenu">
+        </ul>
+      </nav>
+      <button class="sidebar-minimizer brand-minimizer" type="button"></button>
+    </div>
+
+    <!-- Main content -->
+    <main class="main p-1">
+      <h5 class="p-0 m-0 w-100 nav position-relative"><b id="modTitle" class=""></b></h5>
+      <div class="" id="pnlBody"></div>
+      <!-- /.conainer-fluid -->
+    </main>
+    <div id="msjLoad" class="w-100 hidden loader">Cargando..</div>
+    <!-- Main Modal -->
+    <div id="pnlModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="pnlModalTitle" aria-hidden="true">
+    </div>
+    <div id="pnlFijo" class="modal" tabindex="-1" role="dialog" aria-labelledby="pnlFijoTitle" aria-hidden="true">
+    </div>
+    <!-- Menu Lateral -->
+    <div id="pnlMenulRight" class="menul-right">
+    </div>
+  </div>
+
+  <footer class="app-footer d-flex justify-content-end">
+    <!--span class="ml-auto"><a href="./">ARHon</a> a la medida de tu empresa</span-->
+    <div class="col"></div>
+    <div class="">
+      <a class="nav-link" href="javascript:void(0)" id="btnAlert" data-toggle="popover" data-placement="top" data-url="/alert.html" data-target="#pnlAlert" data-original-title="" title="" aria-describedby="popover603907">
+        <i class="fa fa-bell"></i>
+        <span class="badge badge-pill badge-danger" id="nroAlertas"></span>
+      </a>
+    </div>
+    <span><a href="#"></a> © 2019 AbiT</span>
+    <div class="col"></div>
+  </footer>
+
+  <!-- Bootstrap and necessary plugins -->
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="/node_modules/moment/moment.js" type="text/javascript"></script>
+  <script src="/node_modules/moment/locale/es.js" type="text/javascript"></script>
+  
+  <script src="/node_modules/bootstrap4-datetimepicker/build/js/bootstrap-datetimepicker.min.js" type="text/javascript"></script>
+  <!--script src="/js/locales/bootstrap-datetimepicker.es.js" type="text/javascript"></script -->
+
+  <!-- CoreUI main scripts -->
+
+  <script src="js/app.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- Plugins and scripts required by this views -->
+
+  <!-- Custom scripts required by this view -->
+  <script type="text/javascript" src="./js/sammy.min.js"></script>
+  <script type="text/javascript" src="./js/toastr.min.js"></script>
+  <script type="text/javascript" src="./js/router.js"></script>
+  <!---- script type="text/javascript" src="./node_modules/pdfmake/build/pdfmake.min.js"></script ---->
+  <!---- script type="text/javascript" src="./node_modules/pdfmake/build/vfs_fonts.js"></script ---->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.min.js"></script>
+  <script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
+  <script type="text/javascript" src="https://api.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js" id="mapBoxJs"></script>
+  <script src="js/push.min.js"></script>
+  <script src="js/qrcode.js"></script>
+  <script src="js/jsQR.js"></script>
+  <script src="js/js.js"></script>
+  
+  
+  <script>
+    var bar = '<div id="pnlLogin" style="width:21em"></div>';
+    $('#btnLogin').popover({title:"Perfil de Usuario", html:true,content:bar});
+    $('#btnLogin').on("click", function(){
+      $("#pnlLogin").css('width', '14rem');
+      if(!($("#pills-tabContent").length)){
+        fnUrl(this);
+      }
+    });
+    
+    var alert = '<ul id="pnlAlert" style="width:21em" class="list-group cs-alert"></ul>';
+    $('#btnAlert').popover({title:"Notificaciones <a href='javascript:void(0);' id='btnAlertClose' class='stretched-link float-right sticky-top'>X</a>", html:true, content:alert, "class":"sombra"});
+    $('#btnAlert').on("click", function(){
+      fnUrl(this);
+      $("#btnAlertClose").on("click", function(){
+        $("#btnAlert").click();
+      });
+    });
+    
+    
+    var mapBox = isValidUrl("https://api.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js","1","1");
+    if(mapBox){
+      //$("#mapBoxJs").attr({src:"https://api.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js"});
+      $("#mapBoxCss").attr({href:"https://api.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.css"});
+    }
+  </script>
+</body>
+</html>

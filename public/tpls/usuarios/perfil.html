@@ -1,0 +1,91 @@
+<div class="panel panel-dark table-responsive project-stats">
+  <div class="panel-body">
+    <a class="btn" data-toggle="modal" data-target="#pnlModal" id="new">
+      <i class="fa fa-plus"></i> Nuevo
+    </a>
+    <div class="table-responsive project-stats">
+      <table class="table">
+        <thead>
+         <tr>
+          <th></th>
+          <th>Usuario</th>
+          <th>Nombre</th>
+          <th>Rol</th>
+        </tr>
+        </thead>
+        <tbody id="listUsuario" data-url="/Personas" data-ac="varLsPersonas.render(res)" data-ft=',"estado":"C"'>
+          <tr data-template>
+            <td>
+              <a href="#" class="btn fa fa-edit icon15" data-toggle="modal" data-target="#pnlModal" onClick="fnPersona({{usua.persId}})" title="Modificar"></a>
+              <a href="#" class="btn fa fa-registered icon15" data-toggle="modal" data-target="#pnlModal" onClick="fnReset({{usua.persId}})" title="Resetear Contraseña"></a>
+            </td>
+            <td>{{usua.cuenta}}</td>
+            <td>{{pers.nombres}} {{pers.apellidos}} </td>
+            <td>{{rol.nombre}} </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  $("#new").on("click", function(e){
+    $.get("./tpls/admin/addPerfil.html", function( data ) {
+      $("#pnlModal").html(data);
+    });
+  });
+
+  var varLstUsuario = Tempo.prepare("listUsuario");
+  $(document).ready(function() {
+    var q =`query{allUsrRoles{nodes{expira rol:roleByRolId{nombre}
+                     pers:personaByUserId{nombres apellidos direccion nacimeinto
+                     empl:empleadosByPersId{nodes{sedeBySedeId{sede}}}}
+                     usua:usuarioByUserId{persId cuenta persId}
+                   }}}`;
+
+    fnGql({query:q, action:`
+      var d = res.data.allUsrRoles.nodes;
+      varLstUsuario.render(d)
+    `});
+
+  });
+  function fnPersona(id){
+    sessionStorage.id = id;
+    $.get("./tpls/admin/editPerfil.html", function( data ) {
+      $("#pnlModal").html(data);
+    });
+  }
+  function fnReset(id){
+    sessionStorage.id = id;
+    var p =`mutation{
+      editUsuario(input:{
+      pPersId: ${id},
+      pEstado: "R",
+      pNombres: " ",
+      pApellidos: " ",
+      pCorreo: " ",
+      pDireccion: " ",
+      pExpira: " ",
+      pSedeId: 0,
+      pCargoId: 0,
+      pPermiso: "{}",
+      pRolId: 0
+      }){usuario{persId}}
+      }`;
+    confirmar=confirm("Esta seguro que desea resetear la contraseña?"); 
+    if (confirmar){
+      fnGql({query:p, action:`
+        var d = res.data.editUsuario.usuario.persId;
+        if(d>0){
+          $("#pnlModal").modal('toggle');
+          toastr.info("La contraseña", "Se reseteo con exito");
+        }
+      `});
+    }else{
+      $("#pnlModal").modal('toggle');
+    }
+  }
+
+</script>

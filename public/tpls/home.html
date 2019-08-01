@@ -1,0 +1,94 @@
+<script src="./js/d3.v3.min.js" language="JavaScript"></script>
+<style>
+    .liquidFillGaugeText { font-family: Helvetica; font-weight: bold; }
+    .circle{border-radius: 50% !important;background: #FFFF00; color: #FFFF00;width: 55em;border: 1px solid #161615;}
+</style>
+
+<div class='position-absolute volver' id="listProductos">
+</div>
+
+<div class="container " style="">
+  <div class="row">
+    <div class="col">
+       <a href="#qr" class="btn btn btn-outline-primary"><i class="fa fa-qrcode"></i> QR</a>
+      <!--a href="#asistMarcado" class="btn btn btn-outline-primary"><i class="fa fa-camera"></i> Asistencia</a-->
+    </div>
+    <div class="col">
+      
+    </div>
+    <div class="col">
+      <!--button class="btn btn btn-outline-dark" onClick="activarAlertasEESS()" id="filtrar"><i class="fa fa-bell"></i> EESS</button-->
+    </div>
+  </div>
+</div>
+
+<script language="JavaScript">
+function activarAlertasEESS(){
+    $("#btnAlert").on("click", (()=> {
+      setTimeout(function(){ 
+        eessAlertas();
+      }, 1000);
+    }))
+    $("#btnAlert").trigger("click");
+    var socket = io();
+    
+    socket.on('eessMinimo', function (data) {
+      eessAlertas();
+    });
+};
+
+
+
+var eessAlertas = function(){
+  
+  
+  if($("#pnlAlert").length){
+    var q = `{allVwVolumenesMinimos{nodes{usuario volumen fechaHora capacidad limiteInferior nombreEstacion nombreDepartamento productoId} totalCount}
+            allEessProductos{nodes{id color producto}}
+           }`;
+    console.log("alert.....");
+    fnGql({query:q, action:function(res){
+      var volumenesMenoresAMinimo = res.data.allVwVolumenesMinimos.nodes;
+      var productos = res.data.allEessProductos.nodes;
+      $("#nroAlertas").html(res.data.allVwVolumenesMinimos.totalCount);
+      $("#pnlAlert").html("");
+      var eessSinSUministro = "";
+      volumenesMenoresAMinimo.map(reg => {
+        var minimo = ((reg.limiteInferior / reg.capacidad)*100);
+        var volumenExistente = ((reg.volumen / reg.capacidad)*100);
+        var producto = productos.find(r => r.id == reg.productoId);
+        eessSinSUministro = eessSinSUministro+`[${reg.nombreDepartamento}]${reg.nombreEstacion} ${Math.round(reg.volumen)}Litros ${moment(reg.fechaHora).format('DD/MM/YYYY hh:mm')}\n`;
+        $("#pnlAlert").append(`
+        <li class="p-1 list-group-item" style="box-shadow: inset 0 0 50px ${producto.color};">
+          <div class="d-flex w-100 p-0 justify-content-between">
+            <h4 class="mb-1 p-0"><i class="bell fa fa-bell"></i>${Math.round(reg.volumen)}<small>Litros</small></h4>
+            <small class="p-0">${moment(reg.fechaHora).format('lll')}</small>
+          </div>
+          <p class="mb-1 p-0 m-0">[${reg.nombreDepartamento}] ${reg.nombreEstacion}</p>
+          <div class="progress p-0 m-0">
+            <div class="progress-bar" role="progressbar" style="width: ${volumenExistente}%" aria-valuenow="${volumenExistente}" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar bg-success" role="progressbar" style="width: ${minimo}%" aria-valuenow="${minimo}" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar bg-light" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="pepe"><b> ${producto.producto}</b></div>
+          </div>
+        </li>
+        `);
+      });
+      if(volumenesMenoresAMinimo.length >0){
+        Push.create("YPFB EESS", {
+          body: eessSinSUministro,
+          icon: '/img/gas.png',
+          link:'',
+          vibrate: [500,110],
+          dir:'',
+          onClick: function () {
+            window.focus();
+            this.close();
+          }
+        });
+      }    
+    }});
+  }
+  
+}
+</script>

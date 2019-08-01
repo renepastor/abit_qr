@@ -1,0 +1,81 @@
+<div class="modal-dialog modal-lg" role="document">
+  <form class="csForm modal-content" id="formModificarUsuarios">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Modificar Usuarios</legend>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+        <div class="form-group col">
+          <label for="cuenta">Cuenta : </label>
+          <input type="text" name="cuenta" id="cuenta"  placeholder="Cuenta" size="10" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="clave">Clave : </label>
+          <input type="text" name="clave" id="clave"  placeholder="Clave" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="alias">Alias : </label>
+          <input type="text" name="alias" id="alias"  placeholder="Alias" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="estado">Estado : </label>
+          <select name="estado" id="estado" class="form-control text">
+            <option value="C">Activo</option>
+            <option value="X">Inactivo/Eliminado</option>
+          </select>
+        </div><input type="hidden" name="persId" id="persId" required="required" placeholder="Pers" class="int8">
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="submit" class="btn btn-sm btn-primary">
+        <i class="fa fa-save"></i> Modificar
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal">
+        Cancelar <i class="fa fa-close"></i> 
+      </button>
+    </div>
+   </fieldset>
+  </form>
+</div>
+<script type="text/javascript">
+$("#formModificarUsuarios").submit(function(e) {
+    e.preventDefault();
+    var data = $(this);
+    var est = "C";
+    if(!$("#formModificarUsuarios #estado").prop("checked")){
+      est ="X";
+    }
+    var dt = formInput(this);
+    var p =`mutation{updateUsuarioById(input:{id:"${$("#id").val()}" usuarioPatch:{${dt}}}){
+        usuario{id}
+       }
+     }`;
+    fnGql({query:p, action:function(res){
+      var d = res.data.updateUsuarioById.usuario.id;
+      if(d>0){
+        $("#pnlModal").modal("toggle");
+        toastr.info("Correctamente", "Se registro");
+        $("tbody#pnlUsuarios").html(""); 
+        listUsuarios();
+      }else{
+        toastr.error(res.toString(), "No se registro");
+      }
+    }});
+  });
+  $(document).ready(function() {
+    var dato = JSON.parse(_d(sessionStorage.getItem("usuarios")));
+    var q =`{usuarioById(id:"${dato.persId}"){ persId,cuenta,clave,alias,estado,usuario,editado}}`;
+        fnGql({query:q, action:function(res){
+          var usuario = res.data.usuarioById;
+          Object.keys(usuario).map(res => {
+            $("#"+res).val(usuario[res]);
+            if(res == "foto") $("#foto_ax").attr({"src":usuario["foto"]});
+          });
+        }});
+  });
+</script>
+<script type="text/javascript" src="./js/global.js"></script>

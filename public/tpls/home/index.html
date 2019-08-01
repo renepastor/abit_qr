@@ -1,0 +1,148 @@
+
+  <div class="csForm modal-content" id="formCrearAsistencias">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Selfie</legend>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+        <div class="form-group col-sm-6 p-0 m-0">
+          <label for="foto" class="img-thumbnail">
+            <input type="hidden" name="foto" id="foto" class="text">
+            <video id="live"  width="100%" height="300rem" autoplay></video>
+            <canvas class="csHidden" id="preview"></canvas>
+          </label>
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="personaId">Usuario : </label><span id="userSelfi">sassa</span>
+          <img src="" id="imgSelfi" width="10rem">
+          <input type="hidden" name="personaId" readonly="readonly" id="personaId" required="required" class="form-control int8">
+          <input type="hidden" name="cordenadas" id="cordenadas" required="required" class="json">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="submit" class="btn btn-sm btn-primary" id="btnCapturar">
+        <i class="fa fa-camera"></i> Guardar
+      </button>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <table class="tabla list">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Fecha Hora</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="lista">
+        </tbody>
+        </table>
+    </div>
+    <br/>
+   </fieldset>
+  </div>
+  <br/>
+<script type="text/javascript">
+/*$("#formCrearAsistencias").submit(function(e) {
+    e.preventDefault();
+    var data = $(this);
+    var est = "C";
+    if(!$("#formCrearAsistencias #estado").prop("checked")){
+      est ="X";
+    }
+    var dt = formInput(this);
+    var p =`mutation{createAsistencia(input:{asistencia:{${dt}}}){
+        asistencia{id}
+       }
+     }`;
+    fnGql({query:p, action:function(res){
+      var d = res.data.createAsistencia.asistencia.id;
+      if(d>0){
+        $("#pnlModal").modal("toggle");
+        toastr.info("Correctamente", "Se registro");
+        $("tbody#pnlAsistencias").html(""); 
+        listAsistencias();
+      }else{
+        toastr.error(res.toString(), "No se registro");
+      }
+    }});
+  });
+  */
+$(document).ready(function() {
+
+    $("#userSelfi").text(sessionStorage.userName);
+      
+
+    var canvas = document.getElementById("preview");
+    var context = canvas.getContext("2d");
+
+    canvas.width = 220;
+    canvas.height = 140;
+
+    context.width = canvas.width;
+    context.height = canvas.height;
+
+    var video = document.getElementById("live");
+    //var socket = io();
+
+    function logger(msg){
+      $("#logger").text(msg);
+    }
+
+    function loadCam(stream)
+    {
+     //video.src = window.URL.createObjectURL(stream);
+      video.srcObject = stream;
+      logger('camara cargada correctamente [OK]');
+    }
+
+    function loadFail()
+    {
+      logger('Camara no encontrada, revise la camara');
+    }
+
+    function viewVideo(video,context)
+    {
+      context.drawImage(video,0,0,context.width, context.height);
+      $("#imgSelfi").attr({"src":canvas.toDataURL('image/webp')});
+      //para trasmitir las imagenes como cadena,  webp es un formato parecido a png
+      ///socket.emit('stream',canvas.toDataURL('image/webp'));
+    }
+
+    $(function(){
+      navigator.getUserMedia= (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msgGetUserMedia);
+      if(navigator.getUserMedia)
+      {
+        navigator.getUserMedia({video : true},loadCam,loadFail);
+      }
+      /*setInterval(function(){
+        viewVideo(video,context);
+      },1000);*/
+      
+    });
+    $("#listado").html("");
+    var c = 1;
+    $("#btnCapturar").on("click", function(e){
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        //var options = { position: new google.maps.LatLng(lat, lng) }
+        //var marker = new google.maps.Marker(options);
+        //marker.setMap(map);
+        console.log("", lat, lng);
+        $("#lista").append(`<tr>
+          <td>${sessionStorage.userName}</td>
+          <td>${moment().format("DD/MM/YYYY HH:mm")}</td>
+          <td><a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=19/${lat}/${lng}" target="_blank"><i class="fa fa-map-marker"></i> Ver</a></td>
+        </tr>`);
+        viewVideo(video,context);
+        c++;
+      });
+    });
+
+
+     
+  });
+</script>
+<script type="text/javascript" src="./js/global.js"></script>

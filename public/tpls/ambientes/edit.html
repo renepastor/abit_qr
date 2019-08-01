@@ -1,0 +1,80 @@
+<div class="modal-dialog modal-lg" role="document">
+  <form class="csForm modal-content" id="formModificarAmbientes">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Modificar Ambientes</legend>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+        <div class="form-group col">
+          <label for="descripcion">Descripcion : </label>
+          <input type="text" name="descripcion" id="descripcion" required="required" placeholder="Descripcion" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="codigo">Codigo : </label>
+          <input type="text" name="codigo" id="codigo"  placeholder="Codigo" size="30" class="form-control text">
+        </div>
+        <div class="form-group col">
+          <label for="estado">Estado : </label>
+          <select name="estado" id="estado" class="form-control text">
+            <option value="C">Activo</option>
+            <option value="X">Inactivo/Eliminado</option>
+          </select>
+        </div><input type="hidden" name="id" id="id" required="required" placeholder="Id" class="int8">
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="submit" class="btn btn-sm btn-primary">
+        <i class="fa fa-save"></i> Modificar
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal">
+        Cancelar <i class="fa fa-close"></i> 
+      </button>
+    </div>
+   </fieldset>
+  </form>
+</div>
+<script type="text/javascript">
+$("#formModificarAmbientes").submit(function(e) {
+    e.preventDefault();
+    var data = $(this);
+    var est = "C";
+    if(!$("#formModificarAmbientes #estado").prop("checked")){
+      est ="X";
+    }
+    var dt = formInput(this);
+    var p =`mutation{updateAmbienteById(input:{id:"${$("#id").val()}" ambientePatch:{${dt}}}){
+        ambiente{id}
+       }
+     }`;
+    fnGql({query:p, action:function(res){
+      var d = res.data.updateAmbienteById.ambiente.id;
+      if(d>0){
+        $("#pnlModal").modal("toggle");
+        toastr.info("Correctamente", "Se registro");
+        $("tbody#pnlAmbientes").html(""); 
+        listAmbientes();
+      }else{
+        toastr.error(res.toString(), "No se registro");
+      }
+    }});
+  });
+  $(document).ready(function() {
+    var dato = JSON.parse(_d(sessionStorage.getItem("ambientes")));
+    var q =`{ambienteById(id:"${dato.id}"){ id,descripcion,codigo,datos,estado,usuario,editado}}`;
+        fnGql({query:q, action:function(res){
+          var ambiente = res.data.ambienteById;
+          Object.keys(ambiente).map(res => {
+            $("#"+res).val(ambiente[res]);
+            if(res == "foto") $("#foto_ax").attr({"src":ambiente["foto"]});
+          });
+        }});
+     $(" ").datetimepicker({
+        format:"L",locale: "es",format: "DD/MM/YYYY"
+     });
+  });
+</script>
+<script type="text/javascript" src="./js/global.js"></script>

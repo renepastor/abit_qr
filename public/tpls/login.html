@@ -1,0 +1,126 @@
+<div class="">
+  <div class="tab-content" id="pills-tabContent">
+    <div class="fade show active" id="pnlUsuarioSesion" role="tabpanel" aria-labelledby="tab-ldap"></div>
+    <div class="fade show active" id="pnlRolesSesion" role="tabpanel" aria-labelledby="tab-ldap"></div>
+    <div class="fade show active" id="ldap" role="tabpanel" aria-labelledby="tab-ldap">
+      <form method="POST" id="formLoginAD" class="content">
+            <div class="card-header p-1"><b>Iniciar Sesion</b></div>
+            <div class="input-group">
+              <div class='input-group-append'>
+                <i class="input-group-text fa fa-user">&nbsp;</i>
+              </div>
+              <input placeholder="Usuario" required="" type="text" id="pUsuario" name="pUsuario" class="texto form-control">
+            </div>
+            <div class="input-group">
+              <div class='input-group-append'>
+                <i class="input-group-text fa fa-key"></i>
+              </div>
+              <input placeholder="Contraseña" required="" type="password" id="pClave" name="pClave" class="texto form-control">
+            </div>
+          <div class="inpForm m-1 text-center">
+            <button type="submit" class="btn btn-sm btn-outline-primary">Ingresar</button>
+            <a type="button" href="#salir" class="btn btn-sm btn-outline-primary"> Salir <i class=" fa fa-sign-out"></i></a>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+<script>
+  (function(){
+    if(sessionStorage.sRolId != undefined) {
+      if(sessionStorage.sRolId > 0)
+        toastr.success("Bienvenido.. ",nameSis,confNotiInf);
+      $("#pnlRolesSesion").append(`<div class="card-header p-1"><b>Rol : </b></div><select class="form-control form-control-sm" id="ssRoles"></select>`);
+      var q =`query {miUsuario {cuenta persId
+        usrRolesByUserId {nodes {rolId permiso rol:roleByRolId {nombre id} }}
+      }}`;
+      fnGql({query:q, action:function(res){
+        fnRoles(res);
+        $("#ssRoles").val(sessionStorage.sRolId);
+        $("#pnlUsuarioSesion").html(`<div class="card-header p-1"><b>Usuario : </b><span class="m-2">${res.data.miUsuario.cuenta}</span></div>`);
+      }});
+    }
+  })();
+$("#formLogin").submit(function(e) {
+  var form =  $(this);
+  e.preventDefault();
+  var pClave = form.find("#pClave").val();
+  var pUsuario = form.find("#pUsuario").val();
+  var q =`
+  mutation{
+    auth(input:{pClave:"${pClave}",pUsuario:"${pUsuario}"}) {
+    clientMutationId jwt
+  }}`;
+  fnGql({query:q, action:function(res){
+    if(res.data.auth.jwt != null){
+      toastr.success("Bienvenido.. ","..");
+      sessionStorage.token = res.data.auth.jwt;
+      var q2 =`query{miUsuario{cuenta persId
+        personaByPersId{primerNombre primerApellido}
+        usrRolesByUserId{nodes{rolId permiso}}
+      }}`;
+      fnGql({query:q2, action:function(res){
+        console.log(res);
+        sessionStorage.sRolId = res.data.miUsuario.usrRolesByUserId.nodes[0].rolId;
+        sessionStorage.userName = res.data.miUsuario.cuenta
+        window.location = window.location.origin;
+      }});
+    }else{
+      toastr.info("Ups! el usuario o contraseña es incorrecto","Aviso");
+      $("#formLogin")[0].reset();
+    }
+  }});
+});
+$("#formLoginAD").submit(function(e) {
+  var form =  $(this);
+  e.preventDefault();
+  sessionStorage.clear();
+  var pClave = form.find("#pClave").val();
+  var pUsuario = form.find("#pUsuario").val();
+  var url = './src/login';
+  var data = {"pUsuario":pUsuario, "pClave":pClave};
+  fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  }).then(res => {
+      if(res.status > 350){
+        toastr.error("Usuario o Clave incorrectos. ","Lo sentimos", confNotiErr);
+      }else{
+        return res.json();
+      }
+    }
+  )
+  .catch(error => {toastr.error("Lo sentimos hubo un error ","Error ", confNotiErr);})
+  .then(res => {
+      sessionStorage.dataUser = JSON.stringify(res);
+      //sessionStorage.ssCi = res.userRH.ci;
+      sessionStorage.token = res.jwt;
+      /*var q2 =`query{miUsuario{cuenta persId
+        personaByPersId{primerNombre primerApellido}
+        usrRolesByUserId{nodes{rolId permiso}}
+      }}`;*/
+      var q2 =`query{miUsuario{cuenta persId
+        usrRolesByUserId{nodes{rolId permiso}}
+      }}`;
+      fnGql({query:q2, action:function(res){
+        toastr.success("Bienvenido.. ","..");
+        sessionStorage.sRolId = res.data.miUsuario.usrRolesByUserId.nodes[0].rolId;
+        sessionStorage.userName = res.data.miUsuario.cuenta
+        window.location = window.location.origin;
+      }});
+  });
+});
+
+$('#login-tab a').on('click', function(e) {
+    e.preventDefault();
+    $(this).tab('show');
+});
+</script>

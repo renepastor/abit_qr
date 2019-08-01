@@ -1,0 +1,30 @@
+{
+	"name": "Sistema \r ABIT",
+	"short_name": "ABIT",
+	"description": "Aplicacion ABIT",
+	"start_url": "./#home",
+	"display": "standalone",
+	"orientation": "portrait",
+	"background_color": "#022E56",
+	"theme_color": "#022E56",
+	"scope" : "./",
+	"lang" : "es-BO",
+	"icons": [
+		{
+			"src": "./img/logo.png",
+			"type": "image/png",
+			"sizes": "192x192"
+		},
+		{
+			"src": "./img/logo.png",
+			"type": "image/png",
+			"sizes": "512x512"
+		}
+	],
+	"author": {
+		"name": "Rene Pastor Mamani Flores",
+		"website": "https://www.abit.bo"
+	},
+	"gcm_sender_id": "274065036763698",
+	"gcm_user_visible_only": true
+}

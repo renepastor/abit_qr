@@ -1,0 +1,178 @@
+<div class="modal-dialog modal-lg" role="document">
+  <form class="csForm modal-content" id="formCrearTblTipos">
+   <fieldset>
+    <div class="modal-header p-0">
+      <legend class="modal-title" id="exampleModalLongTitle">  &nbsp; Lector QR</legend>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row align-items-start">
+        <div class="form-group col">
+
+  <div id="loadingMessage">Cargando QR...</div>
+  
+  <canvas id="canvas" hidden></canvas>
+  <div id="output" hidden>
+    <div id="outputMessage">No QR code detected.</div>
+    <div hidden><b>Data:</b> <span id="outputData"></span></div>
+  </div>
+  <div id="qrcode"></div>
+  
+  
+  </div>
+        
+      </div>
+    </div>
+    <div class="modal-footer justify-content-center p-2">
+      <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal" id="cancelar">
+        Cancelar <i class="fa fa-close"></i> 
+      </button>
+    </div>
+   </fieldset>
+  </form>
+</div>
+  <script>
+    var video = document.createElement("video");
+    var canvasElement = document.getElementById("canvas");
+    var canvas = canvasElement.getContext("2d");
+    var loadingMessage = document.getElementById("loadingMessage");
+    var outputContainer = document.getElementById("output");
+    var outputMessage = document.getElementById("outputMessage");
+    var outputData = document.getElementById("outputData");
+
+    function drawLine(begin, end, color) {
+      canvas.beginPath();
+      canvas.moveTo(begin.x, begin.y);
+      canvas.lineTo(end.x, end.y);
+      canvas.lineWidth = 4;
+      canvas.strokeStyle = color;
+      canvas.stroke();
+    }
+
+    // Use facingMode: environment to attemt to get the front camera on phones
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+      video.play();
+      requestAnimationFrame(tick);
+    });
+
+    function tick() {
+      loadingMessage.innerText = "⌛ Loading video..."
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        loadingMessage.hidden = true;
+        canvasElement.hidden = false;
+        outputContainer.hidden = false;
+
+        canvasElement.height = 220; //video.videoHeight;
+        canvasElement.width = 220; // video.videoWidth;
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+        var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        if (code) {
+          drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+          drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+          drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+          drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+          outputMessage.hidden = true;
+          outputData.parentElement.hidden = false;
+          outputData.innerText = code.data;
+          if(code.data!==""){
+            fnQrPersonal(code.data);
+            $("#cancelar").click();
+            $("#pnlModal").html("");
+          }
+        } else {
+          outputMessage.hidden = false;
+          outputData.parentElement.hidden = true;
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+    //fnQrPersonal("m45c0t4=1");
+    function fnQrPersonal(code){
+      var dato = (code).split("=");
+      if(dato[0]=="m45c0t4"){
+        $("table#ficha").html("");
+        var q =`query{fichaMascotaById(id:"${dato[1]}"){id nombre nombreDueno direccionDueno foto coordenadas notas contactos adicionales}}`;
+        fnGql({query:q, action:function(res){
+            var row = res.data.fichaMascotaById;
+            var notas = "", contactos = "", adicionales = "";
+            JSON.parse(row.notas).map(r => {if(r.Nota != "") notas = notas+`<li>${r.Nota}</li>`;});
+            JSON.parse(row.contactos).map(r => {if(r.Telefono != "") contactos = contactos+`<li>${r.Nombre} <i class="fa fa-phone"></i>${r.Telefono}</li>`;});
+            JSON.parse(row.adicionales).map(r => {if(r.Adicionales != "") adicionales = adicionales+`<li>${r.Adicionales}</li>`;});
+            $("#load").html("Cargando....");
+            
+            $("table#ficha").html(`
+                <tr class="${row.estado}">
+                  <td><b>Nombre : </b>${row.nombre}<br/>
+                    <b>Dueño : </b>${row.nombreDueno}<br/>
+                    <b>Direccion : </b>${row.direccionDueno}
+                  </td>
+                  <td><img src="${row.foto}"></td>
+                </tr>
+                <tr>
+                  <td><input type="hidden" id="mapitaImg" value="${row.coordenadas}"><div style="height: 200px; width:200px !important ;" id="map"></div></td>
+                  <td><b>Notas : </b>
+                    <ul>${notas}</ul></td>
+                <tr>
+                <tr>
+                  <td colspan="2"><b>Contactos : </b>
+                    <ul>${contactos}</ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2"><b>Adicionales : </b>
+                    <ul>${adicionales}</ul>
+                  </td>
+                </tr>`
+              );
+              mapPoint("mapitaImg");
+            }});
+      }
+
+      if(dato[0]=="p3850n4"){
+        $("table#ficha").html("");
+        var q =`query{fichaPersonalById(id:"${dato[1]}"){id nombre emergencias foto notas direccion fechaNacimiento ci tipoSangre contactos}}`;
+        fnGql({query:q, action:function(res){
+            var row = res.data.fichaPersonalById;
+            $("#load").html("Cargando....");
+            console.log(JSON.parse(row.notas));
+            var notas = "", contactos = "";
+            JSON.parse(row.notas).map(r => {if(r.Nota != "") notas = notas+`<li>${r.Nota}</li>`;});
+            JSON.parse(row.contactos).map(r => {if(r.Telefono != "") contactos = contactos+`<li>${r.Nombre} <i class="fa fa-phone">${r.Telefono}</li>`;});
+            $("table#ficha").html(`
+                  <tr class="${row.estado}">
+                    <td><b>Nombre : </b>${row.nombre}<br/>
+                      <b>Emergencias : </b>${row.emergencias}
+                    </td>
+                    <td><img src="${row.foto}"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2"><b>Notas : </b>
+                    <ul>${notas}</ul>
+                  </td>
+                </tr>
+                  <tr>
+                    <td><b>Direccion : </b><br>${row.direccion}</td>
+                    <td><b>Fecha Nacimiento : </b><br>${row.fechaNacimiento}</td>
+                  </tr>
+                  <tr>
+                    <td><b>Carnet de Identidad : </b><br>${row.ci}</td>
+                    <td><b>Tipo de Sangre : </b><br>${row.tipoSangre}</td>
+                  </tr>
+                  <tr>
+                  <td colspan="2"><b>Contactos : </b>
+                    <ul>${contactos}</ul>
+                  </td>
+                </tr>`
+              );
+            }});
+      }
+    }
+
+  </script>
