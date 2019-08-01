@@ -1,6 +1,6 @@
 # ABIT
 ## ABIT-QR
-[Demo](https://45.63.2.26)
+[Demo](https://45.63.2.26:3000)
 
 **DESCRIPCION**
 Sistema desarrollado con:
@@ -17,7 +17,7 @@ Para el acceso de usuarios y registro de informacion en general se la realisa en
 
 El sistema esta integrado el Front End `/abit_qr/public`  y Back End `/abit_qr/`. El mismo puede ser separado
 ```
-  git clone 
+  git clone https://github.com/renepastor/abit_qr.git
 ```
 
 ***Requisitos***
@@ -55,3 +55,4 @@ directorio /abit_qr$
 ```
 
 
+# TODA SUGERENCIA ES BIEN VENIDO renepastor@gmail.com 591-72001106
