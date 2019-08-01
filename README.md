@@ -27,12 +27,12 @@ El sistema esta integrado el Front End `/abit_qr/public`  y Back End `/abit_qr/`
  >> Tecnologia PWA (HTTPS para publicar)
 
 ***Install Base de Datos***
-directorio /abit_qr/DB$ 
+directorio /abit_qr/BD$ 
 crear BD con usuario "bd_abit" con usuario root
 
-Para Linux ejecutar el archivo `/abit_qr/DB/create.sh`
+Para Linux ejecutar el archivo `/abit_qr/BD/create.sh`
 
-Para WINDOWS sur los archivos .sql a postgres en orde secuencial
+Para WINDOWS sur los archivos `.sql` a postgres en orde secuencial
 
 
 ***Install Back End***
