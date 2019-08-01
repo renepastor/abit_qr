@@ -55,4 +55,4 @@ directorio /abit_qr$
 ```
 
 
-# TODA SUGERENCIA ES BIEN VENIDO renepastor@gmail.com 591-72001106
+** TODA SUGERENCIA ES BIENVENIDO renepastor@gmail.com [591-72001106](https://api.whatsapp.com/send?phone=59172001106&text=sobreElSistemaAbitQR%20) **
