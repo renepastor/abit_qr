@@ -1,11 +1,12 @@
 # ABIT
 ## ABIT-QR
+[Demo](https://45.63.2.26)
 
 **DESCRIPCION**
 Sistema desarrollado con:
- > NodeJs 
- > BD PostgreSql
- > PostGrapHile
+ > NodeJs,
+ > BD PostgreSql,
+ > PostGrapHile,
  > Tecnologia PWA
 
 Capas de generar codigo QR y leer el mismo para identificar a personas y mascotas registradas.
@@ -20,15 +21,37 @@ El sistema esta integrado el Front End `/abit_qr/public`  y Back End `/abit_qr/`
 ```
 
 ***Requisitos***
- >> NodeJs v6.4+
- >> BD PostgreSql v10+
- >> PostGrapHile v4+
+ >> NodeJs v6.4+,
+ >> BD PostgreSql v10+,
+ >> PostGrapHile v4+,
  >> Tecnologia PWA (HTTPS para publicar)
 
+***Install Base de Datos***
+directorio /abit_qr/DB$ 
+crear BD con usuario "bd_abit" con usuario root
 
-***Install Front End***
+Para Linux ejecutar el archivo `/abit_qr/DB/create.sh`
+
+Para WINDOWS sur los archivos .sql a postgres en orde secuencial
+
+
+***Install Back End***
 directorio /abit_qr$ 
 ```
   npm install
 ```
+
+***Install Front End***
+directorio /abit_qr/public$ 
+```
+  npm install
+```
+
+
+***Ejecutar***
+directorio /abit_qr$ 
+```
+  node abit.js
+```
+
 
